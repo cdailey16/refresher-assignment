@@ -1,108 +1,127 @@
-# refresher.py Assignment
-class Order: # Order class to manage drink items in an order
+# refresher.py
+class Drink:  # Drink class to represent a drink with size, base, and flavors
+    def __init__(self, size, base, flavors=None):  # Constructor to initialize the drink with size, base, and optional flavors
+        valid_sizes = {'small': 1.50, 'medium': 1.75, 'large': 2.05, 'Mega': 2.15}
+        valid_bases = {'water', 'sbrite', 'pokeacola', 'Mr. Salt', 'hill fog', 'leaf wine'}
+        valid_flavors = {'lemon', 'cherry', 'strawberry', 'mint', 'blueberry', 'lime'}
+
+        if size not in valid_sizes:
+            raise ValueError(f"Invalid size '{size}'. Valid sizes are: {list(valid_sizes.keys())}")
+        
+        if base not in valid_bases:
+            raise ValueError(f"Invalid base '{base}'. Valid bases are: {valid_bases}")
+        
+        if flavors and not all(flavor in valid_flavors for flavor in flavors):
+            raise ValueError(f"Invalid flavors '{flavors}'. Valid flavors are: {valid_flavors}")
+
+        self._size = size
+        self._base = base
+        self._flavors = set(flavors) if flavors else set()
+
+    @classmethod                     # Class method to check if a base is valid
+    def is_valid_base(cls, base):
+        valid_bases = {'water', 'sbrite', 'pokeacola', 'Mr. Salt', 'hill fog', 'leaf wine'}
+        return base in valid_bases
+   
+    @classmethod                     # Class method to check if a flavor is valid
+    def is_valid_flavor(cls, flavor):
+        valid_flavors = {'lemon', 'cherry', 'strawberry', 'mint', 'blueberry', 'lime'}
+        return flavor in valid_flavors
+
+    def get_size(self):
+        return self._size if hasattr(self, '_size') else None
+    
+    def get_base(self):
+        return self._base if hasattr(self, '_base') else None
+    
+    def get_flavors(self):
+        return list(self._flavors) if hasattr(self, '_flavors') else []
+    
+    def get_num_flavors(self):
+        return len(self._flavors) if hasattr(self, '_flavors') else 0
+    
+    def add_flavor(self, flavor):
+        if flavor not in self._flavors:
+            self._flavors.add(flavor)
+            
+    def set_flavors(self, flavors):
+        self._flavors = set(flavors) if flavors else set()
+        
+    
+    def get_price(self):
+        size_price = {'small': 1.50, 'medium': 1.75, 'large': 2.05, 'Mega': 2.15}
+        return size_price[self._size]
+   
+    def __repr__(self):
+        return f"Drink(size = {self._size}, base = {self._base}, flavors = {list(self._flavors)})"
+    
+class Order:  # Order class to manage a collection of Drink items
     def __init__(self):
-        self._items = []  # Private empty list to store drink items
+        self._items = []  # Initialize _items as an empty list
 
-# Get items getter function to return the list of items and return list of drink items
-    def get_items(self):  
-        return self._items
-
- # Get total getter function to return the total number of items in the order
-    def get_total(self):
-        return len(self._items)  
-
- # Get num items getter function to return the number of items in the order
-    def get_num_items(self):  
-        return len(self._items)
-
-# Get receipt function to return a formatted string of all drink items in the order
-    def get_receipt(self): 
-        receipt = []
-        for drink in self._items:
-            receipt.append(str(drink))
-        return "\n".join(receipt)
-
-    def add_item(self, drink):
-        if isinstance(drink, Drink):
-            self._items.append(drink)
+    def add_item(self, item: int):
+   
+        if isinstance(item, (Drink)):
+            self._items.append(item)
 
     def remove_item(self, index):
         if 0 <= index < len(self._items):
             del self._items[index]
-     
-            
-class Drink:
-    def __init__(self, base):
-        self._base = base
-        self._flavors = set()  
 
-    # String representation of the Drink object
-    def __repr__(self): 
-        return f"Drink(base={self._base}, flavors={list(self._flavors)})"
+    def get_items(self):
+        return self._items
 
-    # Getter function to return the base of the drink
-    def get_base(self):
-        return self._base
+    def get_num_items(self):
+        return len(self._items)
 
-    # Getter function to return the flavors of the drink
-    def get_flavors(self):
-        return list(self._flavors)
-
-    # Getter function to return the number of flavors in the drink
-    def get_num_flavors(self):
-        return len(self._flavors)
-
-    # Method to add a flavor to the drink if it is not already present
-    def add_flavor(self, flavor):
-        if flavor not in self._flavors:
-            self._flavors.add(flavor)
-
-    # Method to set the flavors of the drink, resetting any existing flavors
-    def set_flavors(self, flavors):
-        self._flavors = set(flavors) # Resetting flavors to the new set
-
-    valid_bases = {'water', 'sbrite', 'pokeacola', 'Mr. Salt', 'hill fog', 'leaf wine'}
-    valid_flavors = {'lemon', 'cherry', 'strawberry', 'mint', 'blueberry', 'lime'}
-
-    @classmethod                     # Class method to check if a base is valid
-    def is_valid_base(cls, base):
-        return base in cls.valid_bases
-   
-    @classmethod                     # Class method to check if a flavor is valid
-    def is_valid_flavor(cls, flavor):
-        return flavor in cls.valid_flavors
+    def get_tax(self):
+        return sum(drink.get_price() * 0.075 for drink in self._items)  # Corrected tax calculation
+        
+    def get_total_price(self):
+        return sum(drink.get_price() for drink in self._items) + self.get_tax()  # Total price including tax
     
-  # Creating 1st drink
-drink = Drink('water')  
-drink.set_flavors(['lemon', 'cherry'])
-drink.add_flavor('mint')
+    def get_receipt(self):
+        receipt = []
+        for item in self._items:
+            
+            if isinstance(item, Drink):
+                drink = item
+                receipt.append(f"Drink: {drink.get_base()}")
+                receipt.append(f"Size: {drink.get_size()}, Base: {drink.get_base()}, Flavors: {', '.join(drink.get_flavors())}")
+                receipt.append(f"Price: ${drink.get_price():.2f}")
+                
+            elif isinstance(item, Food):
+                receipt.append(f"Food: {item.get_name()}, Base Price: ${item._base_price:.2f}")
+                if item.get_toppings():
+                    receipt.append(f"Toppings: {', '.join(item.get_toppings())}")
+                    receipt.append(f"Toppings Price: ${sum(item._valid_toppings[t] for t in item.get_toppings()):.2f}")
+                receipt.append(f"Total Food Price: ${item.get_price():.2f}")
+                
+            else:
+                continue
+    
+        receipt.append(f"Tax: ${self.get_tax():.2f}")
+        receipt.append(f"Total with Tax: ${self.get_total_price():.2f}")
+        
+        return (
+            "\n".join(receipt) + "\n" +
+            "---------------------------------\n" +
+            ("Thanks for shopping with us!" if self._items else "Oops looking as empty as your stomach. Try ordering again! \n")
+        )
 
-# Creating 2nd drink
-drink2 = Drink('sbrite')  
-drink2.set_flavors(['strawberry', 'blueberry'])
-drink2.add_flavor('lime')
+    def __repr__(self):
+        return f"Order(items={self._items})"
 
-# Creating a third drink 
-drink3 = Drink('pokeacola')  
-drink3.set_flavors(['mint', 'lime'])
-
-# Creating an order and adding drinks to it
-order = Order()
-order.add_item(drink)  
-order.add_item(drink2)
-order.add_item(drink3)
-
-# Creating a list to hold items from the order
-my_list = []
-items = order.get_items()
-my_list.extend(items)
+if __name__ == "__main__":  
+    # Define the drink object
+   # drink = Drink('medium', 'water', ['lemon', 'cherry'])
+    drink3 = Drink('small', 'water', ['lemon', 'cherry'])
+    # Create an Order object
+    Order1 = Order()
+    
 
 
-print("                                 ")
-print("         --ORDER RECEIPT--       ")
-print("=================================")
-print(order.get_receipt())  # Output: Receipt of all drink items in the order
-
-print(f"Drinks: {order.get_items()}")  # Output: List of drink items
-print(order.get_total())  # Output: Total number of items in the order
-print(order.get_num_items())  # Output: 3
+    # Add the drink to the order
+    Order1.add_item(drink3)
+    
+    print(Order1.get_receipt())  # Print the receipt for the order

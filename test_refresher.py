@@ -2,13 +2,17 @@ from refresher import Drink, Order
 
 import unittest 
 
-valid_bases = {'water', 'sbrite', 'pokeacola', 'Mr. Salt', 'hill fog', 'leaf wine'}
+#valid_bases = {'water', 'sbrite', 'pokeacola', 'Mr. Salt', 'hill fog', 'leaf wine'}
 
 class Order:
-    def __init__(self):
+    def __init__(self): 
+        """Initialize an empty order."""
         self._items = []
 
     def add_item(self, item):
+        """Add an item to the order."""
+        if not isinstance(item, Drink):
+            raise TypeError("Item must be an instance of Drink.")
         self._items.append(item)
 
     def get_items(self):
@@ -16,12 +20,15 @@ class Order:
 
     def get_num_items(self):
         return len(self._items)
+    
+    def remove_item(self, index):
+        if 0 <= index < len(self._items):
+            del self._items[index]
 
-    def __repr__(self):
+    def __repr__(self): # String representation of the Order class
         return f"Order(items={self._items})"
+    
 
-    def __str__(self):
-        return f"Order with {len(self._items)} items"
 
     def get_total_price(self):
         subtotal = sum(item.get_price() for item in self._items)  # Sum the prices of all items
@@ -56,6 +63,16 @@ class TestDrink(unittest.TestCase):  # TestDrink class inherits from unittest.Te
             
     def test_get_size(self):
         size = self.drink.get_size()
+        self.assertEqual(size, 'MEDIUM')  # Check if the size is correctly retrieved
+        
+    def test_get_invalid_size(self):
+        with self.assertRaises(ValueError):
+            Drink('invalid_size', 'pokeacola')
+        self.assertEqual(self.drink.get_size(), 'medium')
+        self.assertEqual(self.drink.get_base(), 'pokeacola')  # Check if the base is correctly retrieved
+        self.assertIn('lemon', self.drink.get_flavors())  # Check if the flavor is correctly retrieved
+        
+        
             
     def test_set_flavors(self):
         self.drink.set_flavors(['cherry', 'mint'])
@@ -74,9 +91,14 @@ class TestDrink(unittest.TestCase):  # TestDrink class inherits from unittest.Te
         price = self.drink.get_price()
         self.assertEqual(price, 1.75)
         
+    
+    def test_get_price_incorrect(self):
+        with self.assertRaises(ValueError):
+            invalid_drink = Drink('invalid_size', 'pokeacola')  # Create a drink with an invalid size
+            invalid_drink.get_price()  # This should raise a ValueError
         
 class TestOrder(unittest.TestCase):  # TestOrder class inherits from unittest.TestCase     
-    def setUp(self):  # Initialize test fixtures before each test
+    def setUp(self): 
         self.drink = Drink('medium', 'pokeacola', ['lemon'])
         self.drink2 = Drink('large', 'sbrite', ['strawberry', 'blueberry'])
         self.drink3 = Drink('Mega', 'pokeacola', ['mint', 'lime'])
